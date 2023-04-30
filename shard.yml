@@ -1,0 +1,19 @@
+name: brium-app
+version: 0.1.0
+
+authors:
+  - Julien Portalier <julien@portalier.com>
+
+description: |
+  Brium Desktop Application (GTK3)
+
+dependencies:
+  # gtk4:
+  #   github: hugopl/gtk4.cr
+  #   branch: master
+
+  gobject:
+    github: jhass/crystal-gobject
+    branch: main
+
+license: MIT
