@@ -3,26 +3,21 @@ require "./message"
 require "./brium_client"
 
 module BriumApp
-  class Application < Gtk::Application
-    enum ActionType
-      AddToChat
-    end
-    alias ActionData = Message
+  # TODO: extract the actual window to its own class, maybe even a pair of
+  #       classes: one with the UI and another with the logic.
 
+  # TODO: when access token isn't defined, present a window to request and
+  #       enter the access token, then close it and present the talk UI.
+
+  class Application < Gtk::Application
     @pending_mutex = Thread::Mutex.new
-    @pending_ui_actions = Deque({ActionType, ActionData}).new
+    @pending_callbacks = Deque(->).new
 
     @messages = [] of Message
 
     # we must keep references to every GObject we create and are still present
     # on the UI, otherwise the GC will collect them, and the GTK application
     # will start crashing or exiting unexpectedly
-
-    # TODO: extract the actual window to its own class, maybe even a pair of
-    #       classes: one with the UI and another with the logic.
-
-    # TODO: when access token isn't defined, present a window to request and
-    #       enter the access token, then close it and present the talk UI.
 
     @window : Gtk::ApplicationWindow?
     @vbox : Gtk::Box?
@@ -63,7 +58,8 @@ module BriumApp
       end
     end
 
-    private def add_to_chat(message : Message) : Nil
+    # nodoc:
+    def add_to_chat(message : Message) : Nil
       @messages << message
       append_message_to_chat(message)
       scroll_chat_to_bottom
@@ -83,34 +79,22 @@ module BriumApp
           raise "unreachable"
         end
 
-      update_ui_from_mt(:add_to_chat, message)
+      idle_add { add_to_chat(message) }
     end
 
     # When running in a fiber which runs on another thread than the main GTK
     # thread (because GTK blocks the main thread). We must queue a callback that
     # GTK will eventually run on the main thread (during idle time) in order to
     # update the UI.
-    protected def update_ui_from_mt(action : ActionType, data : ActionData)
-      @pending_mutex.synchronize { @pending_ui_actions << {action, data} }
-
-      GC.collect
+    protected def idle_add(&callback : ->)
+      @pending_mutex.synchronize { @pending_callbacks << callback }
 
       GLib.idle_add(0, ->(data : Void*) {
-        data.unsafe_as(Application).process_pending_ui_update
-        0 # run once
-      }, self.unsafe_as(Pointer(Void)), nil)
-    end
-
-    # :nodoc:
-    def process_pending_ui_update : Nil
-      if msg = @pending_mutex.synchronize { @pending_ui_actions.shift? }
-        action, data = msg
-
-        case action
-        in .add_to_chat?
-          add_to_chat(data.as(Message))
-        end
-      end
+        app = data.as(Application)
+        cb = app.@pending_mutex.synchronize { app.@pending_callbacks.shift? }
+        cb.try(&.call)
+        0
+      }, self.as(Void*), nil)
     end
 
     private def append_message_to_chat(message : Message) : Nil
