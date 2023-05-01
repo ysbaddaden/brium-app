@@ -77,6 +77,7 @@ module BriumApp
       @settings_button ||= Gtk::MenuButton.new(
         child: setting_button_icon,
         popover: settings_popover,
+        relief: :none,
       )
     end
 
