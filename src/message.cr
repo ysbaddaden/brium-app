@@ -17,18 +17,18 @@ module BriumApp
       case @type
       in .sent?
         <<-XML
-        <span color="#1f85C7"><b>Me:</b> #{sanitized_message}</span>
-        <span size="small" foreground="#999999">Sent on #{@timestamp}</span>
+        <span color="#1F85C7"><b>Me:</b> #{sanitized_message}</span>
+        <span size="small" foreground="#808080">Sent on #{@timestamp}</span>
         XML
       in .received?
         <<-XML
-        <span color="#666666"><b>Brium:</b> #{sanitized_message}</span>
-        <span size="small" foreground="#999999">Received on #{@timestamp}</span>
+        <b>Brium:</b> #{sanitized_message}
+        <span size="small" foreground="#808080">Received on #{@timestamp}</span>
         XML
       in .failed?
         <<-XML
-        <span color="#666666"><b>Failed:</b> #{sanitized_message}</span>
-        <span size="small" foreground="#999999">Received on #{@timestamp}</span>
+        <span color="red"><b>Failed:</b> #{sanitized_message}</span>
+        <span size="small" foreground="#808080">Received on #{@timestamp}</span>
         XML
       end
     end

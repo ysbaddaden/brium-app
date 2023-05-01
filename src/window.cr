@@ -88,7 +88,7 @@ module BriumApp
       @chat_view ||= Gtk::TextView.new(
         editable: false,
         cursor_visible: false,
-        border_width: 4,
+        border_width: 5,
         wrap_mode: :word_char
       )
     end
