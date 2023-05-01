@@ -4,6 +4,7 @@ module BriumApp
     # on the UI, otherwise the GC will collect them, and the GTK application
     # will start crashing or exiting unexpectedly!
 
+    @headerbar : Gtk::HeaderBar?
     @vbox : Gtk::Box?
     @chat_bottom_mark : Gtk::TextMark?
     @chat_view : Gtk::TextView?
@@ -11,6 +12,8 @@ module BriumApp
     @chat_entry : Gtk::Entry?
 
     def build : Nil
+      self.titlebar = headerbar
+
       chat_view_scroll.add(chat_view)
       vbox.add(chat_view_scroll)
 
@@ -43,6 +46,14 @@ module BriumApp
 
     def clear_chat_entry : Nil
       chat_entry.text = ""
+    end
+
+    private def headerbar : Gtk::HeaderBar
+      @headerbar ||= Gtk::HeaderBar.new(
+        title: "Brium",
+        subtitle: "Talk",
+        show_close_button: true
+      )
     end
 
     private def vbox : Gtk::Box
