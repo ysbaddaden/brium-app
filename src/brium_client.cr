@@ -14,7 +14,7 @@ module BriumApp
 
     def self.access_token : String
       ENV.fetch("BRIUM_ACCESS_TOKEN") do
-        path = File.join("~/.config/brium/access_token")
+        path = config_path("access_token")
 
         if File.exists?(path)
           File.read(path).strip
@@ -22,6 +22,14 @@ module BriumApp
           raise "TODO: create a Gtk::Window to ask user for an API access token"
         end
       end
+    end
+
+    def self.config_path(filename : String) : Path
+      {% if flag?(:windows) %}
+        Path["~/AppData/Local/brium", filename].expand(home: true)
+      {% else %}
+        Path[ENV.fetch("XDG_CONFIG_HOME", "~/.config"), "brium", filename].expand(home: true)
+      {% end %}
     end
 
     protected def initialize(access_token : String, @origin : String)
