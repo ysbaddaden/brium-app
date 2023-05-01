@@ -27,6 +27,9 @@ logging critical errors and warnings, and creashing or exiting unexpectedly.
 
 Maybe the GTK4 bindings don't have that issue?
 
+Using `Gtk::Builder` could help: instead of manually creating GObjects the
+builder would do the job, hence create them in Gtk land, not in Crystal.
+
 ## Contributors
 
 - Julien Portalier
