@@ -21,6 +21,7 @@ module BriumApp
 
       chat_entry.grab_focus_without_selecting
       open_settings unless Settings.configured?
+      destroy_on_escape
     end
 
     def add_to_chat(message : Message) : Nil
@@ -51,6 +52,17 @@ module BriumApp
 
     def close_settings : Nil
       settings_button.active = false
+    end
+
+    private def destroy_on_escape : Nil
+      on_key_press_event do |window, event|
+        if event.keyval == Gdk::KEY_Escape
+          destroy
+          true
+        else
+          false
+        end
+      end
     end
 
     private def headerbar : Gtk::HeaderBar
