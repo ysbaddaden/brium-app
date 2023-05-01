@@ -5,6 +5,8 @@ A simple client to https://brium.me written Crystal using the Gtk3 library.
 Only tested on Linux Elementary OS 6.1, but should be compatible with any Linux
 or macOS with Gtk3 installed. It might also run on Windows.
 
+![screenshot](https://user-images.githubusercontent.com/47380/235488176-6fe23c84-cb9b-4a69-81c9-75ae2a98b3ee.png)
+
 ## Caveats
 
 ### Event Loop
