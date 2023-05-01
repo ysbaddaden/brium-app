@@ -7,12 +7,28 @@ module BriumApp
     # :nodoc:
     INSTANCE = new
 
+    def self.configured? : Bool
+      INSTANCE.configured?
+    end
+
     def self.origin : String
       INSTANCE.origin
     end
 
     def self.access_token : String
       INSTANCE.access_token
+    end
+
+    def self.origin=(origin : String?) : String?
+      INSTANCE.origin = origin
+    end
+
+    def self.access_token=(access_token : String?) : String?
+      INSTANCE.access_token = access_token
+    end
+
+    def self.write_settings : Nil
+      INSTANCE.write_settings
     end
 
     @origin : String?
@@ -26,46 +42,54 @@ module BriumApp
       !!access_token?
     end
 
-    def origin : String
-      @origin ||= ENV.fetch("BRIUM_ORIGIN", DEFAULT_ORIGIN)
+    {% if flag?(:release) %}
+      def origin : String
+        ENV.fetch("BRIUM_ORIGIN") { @origin || DEFAULT_ORIGIN }
+      end
+
+      def access_token : String
+        ENV.fetch("BRIUM_ACCESS_TOKEN") { @access_token.not_nil! }
+      end
+
+      def access_token? : String?
+        ENV.fetch("BRIUM_ACCESS_TOKEN", @access_token)
+      end
+    {% else %}
+      def origin : String
+        @origin || DEFAULT_ORIGIN
+      end
+
+      def access_token : String
+        @access_token.not_nil!
+      end
+
+      def access_token? : String?
+        @access_token
+      end
+    {% end %}
+
+    def origin=(@origin : String?) : String?
     end
 
-    def origin=(origin : String) : String
-      @origin = origin.rstrip('/')
-      write_settings
-      origin
+    def access_token=(@access_token : String?) : String?
     end
 
-    def access_token : String
-      @access_token || ENV["BRIUM_ACCESS_TOKEN"]
-    end
-
-    def access_token? : String?
-      @access_token || ENV["BRIUM_ACCESS_TOKEN"]?
-    end
-
-    def access_token=(access_token : String) : String
-      @access_token = access_token
-      write_settings
-      access_token
-    end
-
-    private def read_settings
+    def read_settings : Nil
       path = config_path("settings.json")
       if File.exists?(path)
-        json = JSON.parse(File.read(path, "r"))
+        json = JSON.parse(File.read(path))
         @origin = json["origin"]?.try(&.as_s)
         @access_token = json["access_token"]?.try(&.as_s)
       end
     end
 
-    private def write_settings
+    def write_settings : Nil
       path = config_path("settings.json")
       Dir.mkdir_p(path.dirname)
       File.open(path, "w", File::Permissions.new(0o600)) { |io| to_json(io) }
     end
 
-    private def config_path(filename : String) : Path
+    def config_path(filename : String) : Path
       {% if flag?(:windows) %}
         Path["~/AppData/Local/brium", filename].expand(home: true)
       {% else %}
@@ -73,7 +97,7 @@ module BriumApp
       {% end %}
     end
 
-    private def to_json(io : IO) : String
+    def to_json(io : IO) : Nil
       {
         "version" => 0,
         "origin" => @origin,

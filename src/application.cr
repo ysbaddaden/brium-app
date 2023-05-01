@@ -1,8 +1,3 @@
-require "gobject/gtk"
-require "./window"
-require "./message"
-require "./brium_client"
-
 module BriumApp
   # TODO: when access token isn't defined, present a window to request and
   #       enter the access token, then close it and present the talk UI.
