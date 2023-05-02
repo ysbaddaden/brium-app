@@ -3,11 +3,7 @@ module BriumApp
   #       enter the access token, then close it and present the talk UI.
 
   class Application < Gtk::Application
-    @pending_mutex = Thread::Mutex.new
-    @pending_callbacks = Deque(->).new
-
     @messages = [] of Message
-
     @window : Window?
 
     def initialize
@@ -45,24 +41,14 @@ module BriumApp
         end
       @messages << message
 
-      idle_add do
+      # When running in a fiber which runs on another thread than the main GTK
+      # thread (because GTK blocks the main thread). We must queue a callback that
+      # GTK will eventually run on the main thread (during idle time) in order to
+      # update the UI.
+      GLib.idle_add do
         window.add_to_chat(message)
+        false
       end
-    end
-
-    # When running in a fiber which runs on another thread than the main GTK
-    # thread (because GTK blocks the main thread). We must queue a callback that
-    # GTK will eventually run on the main thread (during idle time) in order to
-    # update the UI.
-    private def idle_add(&callback : ->)
-      @pending_mutex.synchronize { @pending_callbacks << callback }
-
-      GLib.idle_add(0, ->(data : Void*) {
-        app = data.as(Application)
-        cb = app.@pending_mutex.synchronize { app.@pending_callbacks.shift? }
-        cb.try(&.call)
-        0
-      }, self.as(Void*), nil)
     end
 
     private def window : Window
