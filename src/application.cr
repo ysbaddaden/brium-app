@@ -1,18 +1,21 @@
 module BriumApp
-  # TODO: when access token isn't defined, present a window to request and
-  #       enter the access token, then close it and present the talk UI.
-
   class Application < Gtk::Application
     @messages = [] of Message
     @window : Window?
+    @activated = false
 
     def initialize
       super application_id: "me.brium.app"
 
       on_activate do
-        window.build
-        window.connect("destroy") { quit }
-        window.chat_entry.on_activate { handle_chat_message }
+        if @activated
+          window.present_with_time(Time.utc.to_unix)
+        else
+          @activated = true
+          window.build
+          window.connect("destroy") { quit }
+          window.chat_entry.on_activate { handle_chat_message }
+        end
       end
     end
 
