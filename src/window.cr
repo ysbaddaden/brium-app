@@ -27,7 +27,6 @@ module BriumApp
     def add_to_chat(message : Message) : Nil
       append_message_to_chat(message)
       scroll_chat_to_bottom
-      clear_chat_entry
     end
 
     def append_message_to_chat(message : Message) : Nil

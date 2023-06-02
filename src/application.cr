@@ -26,6 +26,7 @@ module BriumApp
         message = Message.new(:sent, log)
         @messages << message
         window.add_to_chat(message)
+        window.clear_chat_entry
         spawn { send_to_brium(log) }
       end
     end
